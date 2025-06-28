@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>معرض Marklens Vision</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Poppins:wght@700&display=swap" rel="stylesheet">
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+<style>
+    /* الخطوط الأساسية */
+    :root {
+        --primary-gradient: linear-gradient(to right, #ff7e5f, #ffde6b);
+        --secondary-gradient: linear-gradient(to right, #12c2e9, #c471ed, #f64f59);
+        --dark-bg-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        --text-color: #fff;
+        --light-text-color: #e0e0ff;
+        --highlight-color: #ffde6b;
+        --section-border-color: #ffde6b;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background: var(--dark-bg-gradient);
+        color: var(--text-color);
+        min-height: 100vh;
+        padding: 20px;
+        direction: rtl; /* تم تعديل الاتجاه الافتراضي ليكون RTL */
+        font-family: 'Open Sans', sans-serif; /* الخط الأساسي للنصوص */
+        line-height: 1.6;
+    }
+
+    /* شاشة التحميل الأولية (Preloader) */
+    #preloader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--dark-bg-gradient); /* نفس خلفية الموقع أو لون ثابت */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999; /* تأكد أنها أعلى من أي شيء آخر */
+        transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+    }
+
+    #preloader.hidden {
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    .preloader-spinner {
+        border: 5px solid rgba(255, 255, 255, 0.3);
+        border-top: 5px solid var(--highlight-color); /* لون مميز للسبينر */
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin-preloader 1s linear infinite; /* التأكد من استخدام spin-preloader */
+    }
+
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+        text-align: center;
+        overflow-x: hidden; /* إضافة هذا لمنع التجاوز الأفقي داخل الكونتينر */
+    }
+
+    header {
+        text-align: center;
+        margin-bottom: 50px;
+        padding: 20px;
+        position: relative;
+    }
+
+    h1 {
+        font-family: 'Poppins', sans-serif; /* خط مميز للعناوين الرئيسية */
+        font-size: 3.5rem;
+        margin-bottom: 15px;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        position: relative;
+        display: inline-block;
+    }
+
+    @supports not (-webkit-background-clip: text) {
+        h1 {
+            color: #ff7e5f; /* Fallback for unsupported browsers */
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+    }
+
+    h1::after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 150px;
+        height: 4px;
+        background: linear-gradient(to right, #ff7e5f, #feb47b);
+        border-radius: 2px;
+    }
+
+    .intro {
+        font-size: 1.2rem;
+        max-width: 800px;
+        margin: 0 auto;
+        line-height: 1.8;
+        color: var(--light-text-color);
+        text-align: center;
+    }
+
+    .section-divider {
+        display: flex;
+        align-items: center;
+        margin: 60px 0 30px;
+        position: relative;
+        width: 100%;
+        overflow: hidden; /* لمنع أي محتوى داخلي من التجاوز */
+    }
+
+    .divider-title {
+        font-family: 'Poppins', sans-serif; /* خط مميز للعناوين الفرعية */
+        font-size: 2.2rem;
+        background: var(--secondary-gradient);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        padding: 0 20px;
+        position: relative;
+        z-index: 2;
+        white-space: nowrap; /* منع النص من الالتفاف افتراضيًا */
+    }
+
+    @supports not (-webkit-background-clip: text) {
+        .divider-title {
+            color: #ffde6b; /* Fallback */
+        }
+    }
+
+    .divider-line {
+        flex-grow: 1;
+        height: 2px;
+        background: linear-gradient(to right, transparent, rgba(192, 132, 252, 0.5), transparent);
+    }
+
+    .gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 25px;
+        margin-bottom: 50px;
+        justify-items: center;
+    }
+
+    .gallery-item {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: pointer;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        transform: translateY(0);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        height: 300px;
+        width: 100%;
+        max-width: 320px;
+        background: #1e293b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .gallery-item:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 0 2px var(--highlight-color);
+        z-index: 2;
+    }
+
+    .gallery-item::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, rgba(96, 165, 250, 0.1), rgba(192, 132, 252, 0.1));
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    .gallery-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+        position: relative;
+        z-index: 2;
+    }
+
+    .gallery-item:hover img {
+        transform: scale(1.1);
+    }
+
+    .lightbox {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.4s ease;
+        backdrop-filter: blur(5px);
+        overflow: hidden;
+    }
+
+    .lightbox.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .lightbox-content {
+        position: relative;
+        max-width: 90%;
+        max-height: 90%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .lightbox-content img {
+        max-width: 100%;
+        max-height: 80vh;
+        border-radius: 10px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        transform: scale(0.8);
+        transition: transform 0.4s ease;
+        object-fit: contain;
+    }
+
+    .lightbox.active .lightbox-content img {
+        transform: scale(1);
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 30px;
+        right: 30px;
+        font-size: 2.5rem;
+        color: white;
+        background: rgba(255, 255, 255, 0.1);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        z-index: 1001;
+    }
+
+    .close-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: rotate(90deg);
+    }
+
+    .section-info {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 20px;
+        margin: 20px auto 40px;
+        border-left: 4px solid var(--section-border-color); /* استخدام المتغير */
+        max-width: 1000px;
+        text-align: right;
+    }
+
+    .section-info h3 {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+        color: var(--highlight-color); /* استخدام المتغير */
+    }
+
+    .section-info p {
+        line-height: 1.7;
+        color: #cbd5e1;
+    }
+
+    .gallery-item::after {
+        content: "انقر للتكبير";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        text-align: center;
+        padding: 8px;
+        font-size: 0.9rem;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 3;
+        pointer-events: none;
+    }
+
+    .gallery-item:hover::after {
+        opacity: 1;
+    }
+
+    .floating {
+        animation: floating 8s ease-in-out infinite;
+    }
+
+    @keyframes floating {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
+        100% { transform: translateY(0px); }
+    }
+
+    .logo-section .gallery-item {
+        height: 250px;
+    }
+
+    /* أزرار التنقل في الـ Lightbox */
+    .nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        border: none;
+        padding: 15px 20px;
+        font-size: 2rem;
+        cursor: pointer;
+        z-index: 1002;
+        transition: background 0.3s ease;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 60px;
+        height: 60px;
+    }
+
+    .nav-btn:hover {
+        background: rgba(0, 0, 0, 0.7);
+    }
+
+    .prev-btn {
+        right: 20px; /* تم تعديله ليكون على اليمين في RTL */
+    }
+
+    .next-btn {
+        left: 20px; /* تم تعديله ليكون على اليسار في RTL */
+    }
+
+    /* مؤشر التحميل (Spinner) في الـ Lightbox */
+    .lightbox-spinner {
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid #fff;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1003;
+        display: none; /* مخفي افتراضياً */
+    }
+
+    .lightbox.active .lightbox-spinner {
+        display: block; /* يظهر عندما يكون الـ lightbox نشطاً */
+    }
+
+    /* إخفاء الصورة أثناء التحميل في الـ Lightbox */
+    .lightbox-content img.loading {
+        opacity: 0;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    @keyframes spin-preloader {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+
+    /* تصميم أزرار التواصل الاجتماعي والموقع */
+    .social-links {
+        margin-top: 30px;
+        display: flex;
+        justify-content: center;
+        gap: 20px; /* المسافة بين الأزرار */
+        flex-wrap: wrap;
+        margin-bottom: 25px;
+    }
+
+    .social-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        border-radius: 50%; /* لجعل الأزرار دائرية */
+        text-decoration: none;
+        color: #fff;
+        font-size: 1.3rem;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        width: 55px; /* عرض ثابت لضمان شكل دائري مثالي */
+        height: 55px; /* ارتفاع ثابت لضمان شكل دائري مثالي */
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+        background: linear-gradient(45deg, #000000, #151515); /* تدرج لوني جذاب */
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .social-link:hover {
+        transform: translateY(-5px) scale(1.1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+        background: linear-gradient(45deg, #ffde6b, #ffd84b);
+        border-color: #fff;
+    }
+
+    .social-link i {
+        margin-right: 0;
+        font-size: 1.8rem;
+    }
+
+    .social-link span {
+        display: none; /* إخفاء النص بشكل افتراضي للأزرار الدائرية */
+    }
+
+    /* CSS لزر العودة للموقع (الجديد) */
+    .social-link.carrd-back-btn {
+        background: linear-gradient(45deg, #0f3460, #16213e); /* تدرج لوني مختلف لتمييزه */
+        width: auto; /* للسماح للزر بالتوسع ليناسب النص */
+        padding: 0 20px; /* لإعطاء مساحة للنص */
+        border-radius: 25px; /* لجعل الزر مستطيلًا بأطراف دائرية */
+        /* لضمان توسيط الأيقونة والنص داخل الزر */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .social-link.carrd-back-btn:hover {
+        background: linear-gradient(45deg, #1e293b, #2b3b50);
+        border-color: #fff;
+    }
+
+    .social-link.carrd-back-btn span {
+        display: inline-block; /* إظهار النص لهذا الزر فقط */
+        margin-right: 10px; /* مسافة بين الأيقونة والنص */
+        font-size: 1rem; /* حجم الخط للنص */
+        white-space: nowrap; /* منع النص من الالتفاف */
+    }
+
+    .social-link.carrd-back-btn i {
+        font-size: 1.5rem; /* حجم الأيقونة */
+        margin-right: 0; /* تأكد من عدم وجود هامش أيمن زائد */
+    }
+
+    /* زر العودة للأعلى */
+    .back-to-top {
+        position: fixed;
+        bottom: 30px;
+        left: 30px; /* تم تعديله ليكون على اليسار في RTL */
+        background: var(--highlight-color); /* لون متناسق */
+        color: rgb(0, 0, 0);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+        z-index: 999;
+    }
+
+    .back-to-top.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .back-to-top:hover {
+        transform: translateY(-3px) scale(1.1);
+        background: #ffde6b; /* لون أفتح عند التحليق */
+    }
+
+    /* استجابة التصميم للشاشات المختلفة */
+    @media (max-width: 768px) {
+        h1 {
+            font-size: 2.5rem;
+        }
+        .divider-title {
+            font-size: 1.8rem;
+            padding: 0 15px;
+        }
+        .gallery {
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+        .close-btn {
+            top: 20px;
+            right: 20px;
+            font-size: 2rem;
+            width: 45px;
+            height: 45px;
+        }
+        .nav-btn {
+            padding: 10px 15px;
+            font-size: 1.5rem;
+            width: 50px;
+            height: 50px;
+        }
+        .prev-btn {
+            right: 10px;
+        }
+        .next-btn {
+            left: 10px;
+        }
+        .back-to-top {
+            bottom: 20px;
+            left: 20px;
+            width: 45px;
+            height: 45px;
+            font-size: 1.5rem;
+        }
+        .preloader-spinner {
+            width: 50px;
+            height: 50px;
+            border-width: 4px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        h1 {
+            font-size: 2rem;
+        }
+        .divider-title {
+            font-size: 1.5rem;
+            padding: 0 10px;
+            white-space: normal; /* السماح للنص بالالتفاف على الشاشات الصغيرة جداً */
+            text-align: center; /* لضمان تمركز النص بعد الالتفاف */
+        }
+        .section-divider {
+            margin: 40px 0 20px;
+        }
+        .gallery {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        .container {
+            padding: 10px;
+        }
+        .close-btn {
+            top: 15px;
+            right: 15px;
+            font-size: 1.8rem;
+            width: 40px;
+            height: 40px;
+        }
+        .social-link { /* لأزرار التواصل الاجتماعي الدائرية */
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+        }
+        .social-links {
+            gap: 15px;
+        }
+        .social-link.carrd-back-btn { /* لزر العودة للموقع */
+            width: auto;
+            padding: 0 10px; /* تقليل البادينج */
+            border-radius: 20px; /* تصغير نصف قطر الحافة */
+        }
+        .social-link.carrd-back-btn span {
+            margin-right: 5px;
+            font-size: 0.8rem; /* تصغير حجم الخط على الجوال */
+        }
+        .social-link.carrd-back-btn i {
+            font-size: 1.3rem; /* تصغير حجم الأيقونة على الجوال */
+        }
+        .back-to-top {
+            bottom: 15px;
+            left: 15px;
+            width: 40px;
+            height: 40px;
+            font-size: 1.3rem;
+        }
+        .preloader-spinner {
+            width: 40px;
+            height: 40px;
+            border-width: 3px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div id="preloader">
+    <div class="preloader-spinner"></div>
+</div>
+
+<div class="container">
+<header>
+<h1 class="floating" data-aos="fade-up">Marklens Vision</h1>
+<p class="intro" data-aos="fade-up" data-aos-delay="200">
+استكشف عالم الإبداع البصري من خلال معرضنا المميز. نقدم لكم مجموعة فريدة من أعمال التصميم والتصوير الفوتوغرافي، تصاميم لوجوهات احترافية، وإعلانات ناجحة
+</p>
+</header>
+
+<div class="section-divider" data-aos="fade-right">
+<div class="divider-line"></div>
+<h2 class="divider-title">التصميم والتصوير</h2>
+<div class="divider-line"></div>
+</div>
+
+<div class="section-info" data-aos="fade-up">
+<h3>أعمال إبداعية بلمسة احترافية</h3>
+<p>يقدم هذا القسم مجموعة متميزة من أعمال التصميم الجرافيكي والتصوير الفوتوغرافي التي تجمع بين الإبداع والاحترافية. كل صورة تحكي قصة وتنقل مشاعر فريدة من خلال الألوان والتركيبات البصرية المبتكرة.</p>
+</div>
+
+<div class="gallery design-gallery">
+  <div class="gallery-item" data-aos="zoom-in" data-aos-delay="100">
+    <img src="https://imagizer.imageshack.com/img922/7891/lmH7dS.png" alt="تصميم إبداعي" loading="lazy">
+  </div>
+  <div class="gallery-item" data-aos="zoom-in" data-aos-delay="200">
+    <img src="https://imagizer.imageshack.com/img923/8852/UG4kdA.jpg" alt="عمل فني" loading="lazy">
+  </div>
+  <div class="gallery-item" data-aos="zoom-in" data-aos-delay="300">
+    <img src="https://imagizer.imageshack.com/img922/5889/8YPapb.jpg" alt="تصوير احترافي" loading="lazy">
+  </div>
+  <div class="gallery-item" data-aos="zoom-in" data-aos-delay="400">
+    <img src="https://imagizer.imageshack.com/img923/1641/XCOcQz.png" alt="فن بصري" loading="lazy">
+  </div>
+  <div class="gallery-item" data-aos="zoom-in" data-aos-delay="500">
+    <img src="https://imagizer.imageshack.com/img923/6105/zyeIf9.jpg" alt="تصميم جرافيك" loading="lazy">
+  </div>
+  <div class="gallery-item" data-aos="zoom-in" data-aos-delay="550">
+    <img src="https://imagizer.imageshack.com/img924/4230/dyYPPU.jpg" alt="تصميم إبداعي" loading="lazy">
+  </div>
+  <div class="gallery-item" data-aos="zoom-in" data-aos-delay="600">
+    <img src="https://imagizer.imageshack.com/img924/2280/56psLg.png" alt="إبداع فني" loading="lazy">
+  </div>
+  <div class="gallery-item" data-aos="zoom-in" data-aos-delay="700">
+    <img src="https://imagizer.imageshack.com/img922/2249/u8HFhr.jpg" alt="لوحة فنية" loading="lazy">
+  </div>
+  <div class="gallery-item" data-aos="zoom-in" data-aos-delay="800">
+    <img src="https://imagizer.imageshack.com/img923/4964/dWmp05.jpg" alt="فن تصويري" loading="lazy">
+  </div>
+  <div class="gallery-item" data-aos="zoom-in" data-aos-delay="900">
+    <img src="https://imagizer.imageshack.com/img923/9679/r2P937.png" alt="تصميم جرافيكي" loading="lazy">
+  </div>
+  <div class="gallery-item" data-aos="zoom-in" data-aos-delay="1000">
+    <img src="https://imagizer.imageshack.com/img923/5765/DfLAlA.jpg" alt="لوحة فنية" loading="lazy">
+  </div>
+  <div class="gallery-item" data-aos="zoom-in" data-aos-delay="1100">
+    <img src="https://imagizer.imageshack.com/img924/6291/dpaxGi.jpg" alt="تصميم جرافيكي" loading="lazy">
+  </div>
+    <div class="gallery-item" data-aos="zoom-in" data-aos-delay="1200">
+        <img src="https://imagizer.imageshack.com/img923/9674/Np64vR.jpg" alt="تصميم إبداعي" loading="lazy">
+    </div>
+  <div class="gallery-item" data-aos="zoom-in" data-aos-delay="1300">
+    <img src="https://imagizer.imageshack.com/img924/6587/urrLyW.png" alt="تصميم إبداعي" loading="lazy">
+    </div>
+    <div class="gallery-item" data-aos="zoom-in" data-aos-delay="1400">
+        <img src="https://imagizer.imageshack.com/img922/1403/FqKy4S.jpg" alt="تصميم إبداعي" loading="lazy">
+    </div>
+</div>
+
+
+<div class="section-divider" data-aos="fade-left">
+<div class="divider-line"></div>
+<h2 class="divider-title">لوجوهات مميزة</h2>
+<div class="divider-line"></div>
+</div>
+
+<div class="section-info" data-aos="fade-up">
+<h3>هوية بصرية فريدة</h3>
+<p>تصاميم لوجوهات مبتكرة تعبر عن الهوية البصرية للعلامات التجارية. كل لوجو تم تصميمه بعناية ليكون مميزاً، بسيطاً، وقابلاً للتذكر، معبراً عن قيم العلامة التجارية ورسالتها.</p>
+</div>
+
+<div class="gallery logo-section">
+<div class="gallery-item" data-aos="zoom-in" data-aos-delay="100">
+<img src="https://imagizer.imageshack.com/img923/3629/xdL0C3.png" alt="لوجو شركة" loading="lazy">
+</div>
+<div class="gallery-item" data-aos="zoom-in" data-aos-delay="200">
+<img src="https://imagizer.imageshack.com/img922/1505/n19fSr.png" alt="هوية بصرية" loading="lazy">
+</div>
+</div>
+
+<div class="section-divider" data-aos="fade-right">
+<div class="divider-line"></div>
+<h2 class="divider-title">إعلانات جذابة</h2>
+<div class="divider-line"></div>
+</div>
+
+<div class="section-info" data-aos="fade-up">
+<h3>إعلانات تلفت الأنظار</h3>
+<p>عمل اعلانات تحقق نتائج مميزة ، نحقق نتائج اعلانات تهدف الى زيادة المبيعات و التفاعل</p>
+</div>
+
+<div class="gallery ads-section">
+<div class="gallery-item" data-aos="zoom-in" data-aos-delay="100">
+<img src="https://imagizer.imageshack.com/img923/2671/TpJi7G.png" alt="إعلان مبتكر" loading="lazy">
+</div>
+<div class="gallery-item" data-aos="zoom-in" data-aos-delay="200">
+<img src="https://imagizer.imageshack.com/img924/4301/98Pd8q.png" alt="تصميم إعلاني" loading="lazy">
+</div>
+</div>
+</div>
+
+<div class="lightbox">
+<div class="close-btn" aria-label="إغلاق المعرض">
+<i class="fas fa-times"></i>
+</div>
+<div class="lightbox-content">
+<img src="" alt="صورة مكبرة">
+</div>
+<div class="lightbox-spinner"></div>
+</div>
+
+<button class="back-to-top" aria-label="العودة للأعلى">
+    <i class="fas fa-chevron-up"></i>
+</button>
+
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تهيئة AOS لتأثيرات التمرير
+    AOS.init({
+        duration: 800, // مدة التحريك بالمللي ثانية
+        once: true,    // هل يجب أن يتم التحريك مرة واحدة فقط؟
+        mirror: false, // هل يجب تكرار التحريك عند التمرير للأعلى؟
+    });
+
+    const preloader = document.getElementById('preloader');
+    const galleryItems = document.querySelectorAll('.gallery-item');
+    const lightbox = document.querySelector('.lightbox');
+    const lightboxImg = document.querySelector('.lightbox-content img');
+    const closeBtn = document.querySelector('.close-btn');
+    const lightboxSpinner = document.querySelector('.lightbox-spinner');
+    const backToTopBtn = document.querySelector('.back-to-top');
+
+    // للتحكم بالصورة الحالية في الـ lightbox
+    let currentImageIndex = 0;
+    let allGalleryImages = []; // لتخزين جميع مسارات الصور في المعرض
+
+    // التحقق من وجود العناصر قبل إضافة event listeners
+    if (!lightbox || !lightboxImg || !closeBtn || !lightboxSpinner) {
+        console.error('بعض عناصر الـ lightbox غير موجودة في الصفحة.');
+        return;
+    }
+
+    // جمع جميع مسارات الصور من جميع المعارض
+    document.querySelectorAll('.gallery-item img').forEach(img => {
+        if (img.src) {
+            allGalleryImages.push(img.src);
+        }
+    });
+
+    // إضافة أزرار التنقل للـ Lightbox
+    const prevBtn = document.createElement('button');
+    prevBtn.classList.add('nav-btn', 'prev-btn');
+    prevBtn.innerHTML = '<i class="fas fa-chevron-right"></i>'; // السهم الأيمن للصورة السابقة في RTL
+    prevBtn.setAttribute('aria-label', 'الصورة السابقة');
+    lightbox.appendChild(prevBtn);
+
+    const nextBtn = document.createElement('button');
+    nextBtn.classList.add('nav-btn', 'next-btn');
+    nextBtn.innerHTML = '<i class="fas fa-chevron-left"></i>'; // السهم الأيسر للصورة التالية في RTL
+    nextBtn.setAttribute('aria-label', 'الصورة التالية');
+    lightbox.appendChild(nextBtn);
+
+    // دالة للتعامل مع تحميل الصور الأولية وإخفاء الـ preloader
+    let imagesLoaded = 0;
+    const totalImages = allGalleryImages.length;
+
+    function imageLoaded() {
+        imagesLoaded++;
+        if (imagesLoaded === totalImages) {
+            // جميع الصور (أو عدد كافٍ منها) تم تحميلها، إخفاء الـ preloader
+            preloader.classList.add('hidden');
+            document.body.style.overflow = 'auto'; // إعادة التمرير للصفحة
+        }
+    }
+
+    // تحميل الصور الأساسية في الخلفية للـ preloader
+    if (totalImages === 0) {
+        // إذا لم يكن هناك صور، أخفِ الـ preloader على الفور
+        preloader.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    } else {
+        document.body.style.overflow = 'hidden'; // منع التمرير أثناء ظهور الـ preloader
+
+        // تعيين مهلة قصوى لإخفاء الـ preloader
+        const MAX_PRELOADER_DISPLAY_TIME = 3000; // 3 ثوانٍ
+        setTimeout(() => {
+            if (!preloader.classList.contains('hidden')) {
+                preloader.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+                console.warn('Preloader hidden due to timeout, some images might still be loading.');
+            }
+        }, MAX_PRELOADER_DISPLAY_TIME);
+
+        allGalleryImages.forEach(src => {
+            const img = new Image();
+            img.src = src;
+            img.onload = imageLoaded;
+            img.onerror = imageLoaded; // حتى لو فشل التحميل، نعتبرها "تم التعامل معها"
+        });
+    }
+
+
+    // Open lightbox
+    galleryItems.forEach((item) => {
+        item.addEventListener('click', function() {
+            const img = this.querySelector('img');
+            if (img && img.src) {
+                // إظهار السبينر وإخفاء الصورة أثناء التحميل للـ lightbox
+                lightboxSpinner.style.display = 'block';
+                lightboxImg.classList.add('loading');
+                lightboxImg.src = ''; // مسح الصورة السابقة لتجنب الومضات
+
+                const newImage = new Image();
+                newImage.src = img.src;
+                newImage.onload = () => {
+                    lightboxImg.src = newImage.src;
+                    lightboxImg.alt = img.alt || 'صورة مكبرة';
+                    currentImageIndex = allGalleryImages.indexOf(newImage.src); // تحديد فهرس الصورة الحالية
+                    lightbox.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                    updateNavButtons(); // تحديث حالة الأزرار
+                    lightboxSpinner.style.display = 'none'; // إخفاء السبينر بعد التحميل
+                    lightboxImg.classList.remove('loading'); // إظهار الصورة
+                };
+                newImage.onerror = () => {
+                    console.error('فشل تحميل الصورة في الـ lightbox:', img.src);
+                    lightboxImg.src = 'https://via.placeholder.com/600x400?text=تعذر+تحميل+الصورة'; // صورة بديلة أو رسالة خطأ
+                    lightboxImg.alt = 'تعذر تحميل الصورة';
+                    currentImageIndex = allGalleryImages.indexOf(img.src); // لا يزال يشير إلى الصورة الأصلية
+                    lightbox.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                    updateNavButtons();
+                    lightboxSpinner.style.display = 'none'; // إخفاء السبينر حتى عند الخطأ
+                    lightboxImg.classList.remove('loading'); // إظهار الصورة البديلة
+                };
+            }
+        });
+    });
+
+    // وظيفة لتحديث الصورة المعروضة في الـ Lightbox
+    function showImage(index) {
+        if (index >= 0 && index < allGalleryImages.length) {
+            // إظهار السبينر وإخفاء الصورة أثناء التحميل
+            lightboxSpinner.style.display = 'block';
+            lightboxImg.classList.add('loading');
+            lightboxImg.src = ''; // مسح الصورة السابقة
+
+            const newImage = new Image();
+            newImage.src = allGalleryImages[index];
+            newImage.onload = () => {
+                lightboxImg.src = newImage.src;
+                currentImageIndex = index;
+                updateNavButtons();
+                lightboxSpinner.style.display = 'none'; // إخفاء السبينر
+                lightboxImg.classList.remove('loading'); // إظهار الصورة
+            };
+            newImage.onerror = () => {
+                console.error('فشل تحميل الصورة في الـ lightbox:', allGalleryImages[index]);
+                lightboxImg.src = 'https://via.placeholder.com/600x400?text=تعذر+تحميل+الصورة'; // صورة بديلة
+                currentImageIndex = index;
+                updateNavButtons();
+                lightboxSpinner.style.display = 'none'; // إخفاء السبينر حتى عند الخطأ
+                lightboxImg.classList.remove('loading'); // إظهار الصورة البديلة
+            };
+        }
+    }
+
+    // وظيفة لتحديث حالة أزرار التنقل (إخفاء/إظهار)
+    function updateNavButtons() {
+        // في نمط RTL: السهم الأيمن ينقل للـ "سابق" (index - 1)
+        if (currentImageIndex === 0) {
+            prevBtn.style.display = 'none';
+        } else {
+            prevBtn.style.display = 'flex';
+        }
+
+        // في نمط RTL: السهم الأيسر ينقل للـ "تالي" (index + 1)
+        if (currentImageIndex === allGalleryImages.length - 1) {
+            nextBtn.style.display = 'none';
+        } else {
+            nextBtn.style.display = 'flex';
+        }
+    }
+
+    // التنقل إلى الصورة السابقة (في RTL، السهم الأيمن هو للسابق)
+    prevBtn.addEventListener('click', function() {
+        showImage(currentImageIndex - 1);
+    });
+
+    // التنقل إلى الصورة التالية (في RTL، السهم الأيسر هو للتالي)
+    nextBtn.addEventListener('click', function() {
+        showImage(currentImageIndex + 1);
+    });
+
+    // Close lightbox
+    function closeLightbox() {
+        lightbox.classList.remove('active');
+        document.body.style.overflow = 'auto';
+        lightboxSpinner.style.display = 'none'; // تأكد من إخفاء السبينر عند الإغلاق
+        lightboxImg.classList.remove('loading'); // تأكد من إزالة فئة التحميل
+    }
+
+    closeBtn.addEventListener('click', closeLightbox);
+
+    // Close when clicking outside the image
+    lightbox.addEventListener('click', function(e) {
+        if (e.target === lightbox || e.target === closeBtn) { // التأكد من أن النقر خارج الصورة أو على زر الإغلاق
+            closeLightbox();
+        }
+    });
+
+    // Close with Escape key and navigate with Arrow keys
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+            closeLightbox();
+        }
+        if (lightbox.classList.contains('active')) {
+            // في RTL: ArrowRight (السهم اليمين) ينقل للصورة السابقة
+            if (e.key === 'ArrowRight') {
+                showImage(currentImageIndex - 1);
+            }
+            // في RTL: ArrowLeft (السهم اليسار) ينقل للصورة التالية
+            else if (e.key === 'ArrowLeft') {
+                showImage(currentImageIndex + 1);
+            }
+        }
+    });
+
+    // Add subtle animations to gallery items (استخدم فقط لصور المعرض في العرض الأولي)
+    galleryItems.forEach((item, index) => {
+        item.style.transitionDelay = `${index * 0.05}s`;
+    });
+
+    // **إضافة وظائف السحب (Swipe gestures) للهواتف المحمولة**
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    lightbox.addEventListener('touchstart', (e) => {
+        // إذا كان النقر على زر، لا تبدأ السحب
+        if (e.target === prevBtn || e.target === nextBtn || e.target === closeBtn) {
+            return;
+        }
+        touchStartX = e.changedTouches[0].screenX;
+    });
+
+    lightbox.addEventListener('touchend', (e) => {
+        // إذا كان النقر على زر، لا تقم بمعالجة السحب
+        if (e.target === prevBtn || e.target === nextBtn || e.target === closeBtn) {
+            return;
+        }
+        touchEndX = e.changedTouches[0].screenX;
+        handleGesture();
+    });
+
+    function handleGesture() {
+        const swipeThreshold = 50; // الحد الأدنى لمسافة السحب لاعتباره سحباً
+        // في RTL: السحب من اليمين لليسار (touchEndX < touchStartX) يعني الانتقال لـ "التالي"
+        // السحب من اليسار لليمين (touchEndX > touchStartX) يعني الانتقال لـ "السابق"
+
+        if (touchEndX < touchStartX - swipeThreshold) {
+            // Swipe Left (Next in RTL)
+            showImage(currentImageIndex + 1);
+        } else if (touchEndX > touchStartX + swipeThreshold) {
+            // Swipe Right (Previous in RTL)
+            showImage(currentImageIndex - 1);
+        }
+    }
+
+    // Scroll to top functionality
+    window.addEventListener('scroll', function() {
+        if (window.scrollY > 300) {
+            backToTopBtn.classList.add('show');
+        } else {
+            backToTopBtn.classList.remove('show');
+        }
+    });
+
+    backToTopBtn.addEventListener('click', function() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+});
+</script>
+<footer style="text-align: center; padding: 20px; color: #ccc; font-size: 0.9rem;">
+    <div class="social-links">
+        <a href="https://marklens-vision.com" target="_blank" class="social-link website" aria-label="زيارة موقعنا الإلكتروني">
+            <i class="fas fa-globe"></i>
+        </a>
+        <a href="https://www.facebook.com/profile.php?id=61574462416312" target="_blank" class="social-link facebook" aria-label="زيارة صفحتنا على فيسبوك">
+            <i class="fab fa-facebook-f"></i>
+        </a>
+        <a href="https://www.instagram.com/marklens_vision?fbclid=IwY2xjawK37VVleHRuA2FlbQIxMABicmlkETEwMEhNWXhCNFNwZzNtNGRiAR5I85CTWD8jLG8cNVygomIXi78HhC4oUSY4mrmsTJOiJqySdp4tGMZRfNhwgQ_aem_pySjqjC38pnuUazCrlQAHQ" target="_blank" class="social-link instagram" aria-label="زيارة صفحتنا على انستغرام">
+            <i class="fab fa-instagram"></i>
+        </a>
+        <a href="https://marklens-vision.com" target="_self" class="social-link carrd-back-btn" aria-label="العودة إلى الموقع الرئيسي">
+            <i class="fas fa-arrow-left"></i> <span>العودة للموقع</span>
+        </a>
+    </div>
+
+    <div style="height: 25px;"></div>
+
+    &copy;جميع الحقوق محفوظة لـ Marklens Vision 2025    
+</footer>
+
+</body>
+</html>
