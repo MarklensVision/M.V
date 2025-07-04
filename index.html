@@ -9,6 +9,33 @@
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
 <style>
+    
+.floating-cta {
+  position: fixed;
+  bottom: 100px;
+  left: 30px;
+  width: 60px;
+  height: 60px;
+  background: #25D366;
+  color: white;
+  font-size: 28px;
+  border-radius: 50%;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+  text-decoration: none;
+}
+.floating-cta:hover {
+  transform: scale(1.1);
+}
+
+.floating-cta:hover {
+  transform: scale(1.1);
+}
+
     /* الخطوط الأساسية */
     :root {
         --primary-gradient: linear-gradient(to right, #ff7e5f, #ffde6b);
@@ -64,6 +91,18 @@
         height: 60px;
         animation: spin-preloader 1s linear infinite; /* التأكد من استخدام spin-preloader */
     }
+    /* Scroll Progress Bar */
+#progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 4px;
+  background: var(--highlight-color);
+  width: 0%;
+  z-index: 10000;
+  transition: width 0.25s ease-out;
+}
+
 
     .container {
         max-width: 1400px;
@@ -209,6 +248,7 @@
     .gallery-item:hover img {
         transform: scale(1.1);
     }
+    
 
     .lightbox {
         position: fixed;
@@ -317,6 +357,32 @@
         z-index: 3;
         pointer-events: none;
     }
+    .gallery-item::before {
+    content: attr(data-title);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 4; /* فوق كل شي */
+    font-size: 1.1rem;
+    padding: 10px;
+    text-align: center;
+    pointer-events: none;
+    line-height: 1.5;
+}
+
+.gallery-item:hover::before {
+    opacity: 1;
+}
+
 
     .gallery-item:hover::after {
         opacity: 1;
@@ -620,6 +686,9 @@
 </style>
 </head>
 <body>
+    <!-- Scroll Progress Bar -->
+<div id="progress-bar"></div>
+
 
 <div id="preloader">
     <div class="preloader-spinner"></div>
@@ -633,11 +702,13 @@
 </p>
 </header>
 
+
 <div class="section-divider" data-aos="fade-right">
 <div class="divider-line"></div>
 <h2 class="divider-title">التصميم والتصوير</h2>
 <div class="divider-line"></div>
 </div>
+
 
 <div class="section-info" data-aos="fade-up">
 <h3>أعمال إبداعية بلمسة احترافية</h3>
@@ -691,7 +762,7 @@
         <img src="https://imagizer.imageshack.com/img922/1403/FqKy4S.jpg" alt="تصميم إبداعي" loading="lazy">
     </div>
     <div class="gallery-item" data-aos="zoom-in" data-aos-delay="1500">
-        <img src="https://imagizer.imageshack.com/img924/6826/1b2d3H.jpg" alt="تصميم إبداعي" loading="lazy">
+        <img src="https://imagizer.imageshack.com/img924/1773/zNcbcQ.jpg" alt="تصميم إبداعي" loading="lazy">
     </div>
 </div>
 
@@ -734,8 +805,9 @@
 <div class="gallery-item" data-aos="zoom-in" data-aos-delay="200">
 <img src="https://imagizer.imageshack.com/img924/4301/98Pd8q.png" alt="تصميم إعلاني" loading="lazy">
 </div>
-<div class="gallery-item" data-aos="zoom-in" data-aos-delay="300"></div>
-<img src="https://imagizer.imageshack.com/img924/4829/9epUaI.png" alt="تصميم إعلاني" loading="lazy">
+<div class="gallery-item" data-aos="zoom-in" data-aos-delay="300">
+  <img src="https://imagizer.imageshack.com/img924/4829/9epUaI.png" alt="تصميم إعلاني" loading="lazy">
+</div>
 </div>
 </div>
 
@@ -970,6 +1042,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add subtle animations to gallery items (استخدم فقط لصور المعرض في العرض الأولي)
     galleryItems.forEach((item, index) => {
         item.style.transitionDelay = `${index * 0.05}s`;
+        
     });
 
     // **إضافة وظائف السحب (Swipe gestures) للهواتف المحمولة**
@@ -992,6 +1065,8 @@ document.addEventListener('DOMContentLoaded', function() {
         touchEndX = e.changedTouches[0].screenX;
         handleGesture();
     });
+    
+    
 
     function handleGesture() {
         const swipeThreshold = 50; // الحد الأدنى لمسافة السحب لاعتباره سحباً
@@ -1023,6 +1098,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
 </script>
 <footer style="text-align: center; padding: 20px; color: #ccc; font-size: 0.9rem;">
     <div class="social-links">
@@ -1044,6 +1120,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     &copy;جميع الحقوق محفوظة لـ Marklens Vision 2025    
 </footer>
+<script>
+// Scroll Progress Bar
+const progressBar = document.getElementById('progress-bar');
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.body.scrollHeight - window.innerHeight;
+  const percent = (scrollTop / docHeight) * 100;
+  progressBar.style.width = percent + '%';
+});
+</script>
+
+<a href="https://wa.me/962792842047" target="_blank" class="floating-cta" aria-label="طلب تصميم عبر واتساب">
+  <i class="fab fa-whatsapp"></i>
+</a>
+
 
 </body>
 </html>
