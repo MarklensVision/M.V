@@ -40,11 +40,18 @@
   /* تصغير زر واتساب وتحريكه للمكان المناسب على الجوال */
 @media (max-width: 480px) {
   .floating-cta {
-    bottom: 90px;      /* نرفعه شوي عن السهم */
-    left: 20px;        /* نقربه شوي للحافة */
-    width: 40px;       /* أصغر عرض */
-    height: 40px;      /* أصغر ارتفاع */
-    font-size: 20px;   /* أصغر للأيقونة */
+    bottom: 90px;
+    left: 15px;             /* أقرب للزاوية اليسار */
+    width: 38px;            /* أصغر شوي للتماشي مع السهم */
+    height: 38px;
+    font-size: 18px;        /* أصغر شوي */
+    padding: 0;
+  }
+
+  .floating-cta i {
+    font-size: 18px;        /* نضمن أنها ما تطلع برا */
+    line-height: 1;
+    margin: 0;
   }
 }
 
