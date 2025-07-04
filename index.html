@@ -37,6 +37,17 @@
 
 .floating-cta:hover {
   transform: scale(1.1);
+  /* تصغير زر واتساب وتحريكه للمكان المناسب على الجوال */
+@media (max-width: 480px) {
+  .floating-cta {
+    bottom: 90px;      /* نرفعه شوي عن السهم */
+    left: 20px;        /* نقربه شوي للحافة */
+    width: 40px;       /* أصغر عرض */
+    height: 40px;      /* أصغر ارتفاع */
+    font-size: 20px;   /* أصغر للأيقونة */
+  }
+}
+
 }
 
     /* الخطوط الأساسية */
