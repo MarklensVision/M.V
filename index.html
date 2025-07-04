@@ -40,17 +40,21 @@
   /* تصغير زر واتساب وتحريكه للمكان المناسب على الجوال */
 @media (max-width: 480px) {
   .floating-cta {
-    bottom: 20px;   /* أقرب للحافة السفلية */
-    left: 10px;     /* أقرب للحافة اليسرى */
-    width: 38px;
-    height: 38px;
-    font-size: 18px;
+    position: fixed;
+    bottom: 12px;   /* قريب جدًا للحافة السفلية */
+    left: 12px;     /* قريب جدًا للحافة اليسرى */
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
     padding: 0;
+    z-index: 9999;  /* عشان تطلع فوق كل شي */
   }
 
   .floating-cta i {
-    font-size: 18px;
-    line-height: 1;
+    font-size: 20px;
+    line-height: 40px;
+    text-align: center;
+    display: block;
     margin: 0;
   }
 }
