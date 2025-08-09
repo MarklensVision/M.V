@@ -718,6 +718,32 @@
             border-width: 3px;
         }
     }
+
+.protected-image {
+  width: 500px; /* عدل حسب مقاس الصورة */
+  height: 300px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.watermark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.05); /* طبقة شفافة */
+  color: rgba(255,255,255,0.3);
+  font-size: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  text-transform: uppercase;
+}
+</style>
+
 </style>
 </head>
 <body>
@@ -814,13 +840,31 @@
 </div>
 
 <div class="gallery logo-section">
-<div class="gallery-item" data-aos="zoom-in" data-aos-delay="100">
-<img src="https://imagizer.imageshack.com/img923/3629/xdL0C3.png" alt="لوجو شركة" loading="lazy">
+    <div class="gallery-item" data-aos="zoom-in" data-aos-delay="100">
+        <img src="https://imagizer.imageshack.com/img923/3629/xdL0C3.png" alt="لوجو شركة" loading="lazy">
+    </div>
+    <div class="gallery-item" data-aos="zoom-in" data-aos-delay="200">
+        <img src="https://imagizer.imageshack.com/img922/1505/n19fSr.png" alt="هوية بصرية" loading="lazy">
+    </div>
+
+    <!-- الصور الجديدة -->
+    <div class="gallery-item" data-aos="zoom-in" data-aos-delay="300">
+        <img src="https://i.ibb.co/pjGcj56C/1.png" alt="هوية بصرية" loading="lazy">
+    </div>
+    <div class="gallery-item" data-aos="zoom-in" data-aos-delay="400">
+        <img src="https://i.ibb.co/NRy208v/2.png" alt="هوية بصرية" loading="lazy">
+    </div>
+    <div class="gallery-item" data-aos="zoom-in" data-aos-delay="500">
+        <img src="https://i.ibb.co/7d2S1Vd8/3.png" alt="هوية بصرية" loading="lazy">
+    </div>
+    <div class="gallery-item" data-aos="zoom-in" data-aos-delay="600">
+        <img src="https://i.ibb.co/JRcQckK4/4.png" alt="هوية بصرية" loading="lazy">
+    </div>
+    <div class="gallery-item" data-aos="zoom-in" data-aos-delay="700">
+        <img src="https://i.ibb.co/Z6CwqNk9/5.png" alt="هوية بصرية" loading="lazy">
+    </div>
 </div>
-<div class="gallery-item" data-aos="zoom-in" data-aos-delay="200">
-<img src="https://imagizer.imageshack.com/img922/1505/n19fSr.png" alt="هوية بصرية" loading="lazy">
-</div>
-</div>
+
 
 <div class="section-divider" data-aos="fade-right">
 <div class="divider-line"></div>
@@ -842,6 +886,7 @@
 </div>
 <div class="gallery-item" data-aos="zoom-in" data-aos-delay="300">
   <img src="https://i.ibb.co/F4t1tpxm/8832.png" alt="تصميم إعلاني" loading="lazy">
+  
 </div>
 </div>
 </div>
