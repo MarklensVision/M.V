@@ -808,10 +808,25 @@ body.only-videos .video-gallery{ margin-top: 20px; }
 .video-close-btn:hover{background:rgba(0,0,0,.6)}
 
 @media(max-width:520px){
-  .video-close-btn{top:10px !important}
-  .play-btn{width:58px;height:58px}
-}
+  .video-close-btn {
+    top:10px !important;
+    width: 38px;
+    height: 38px;
+    font-size: 16px;
+  }
 
+  .mute-toggle {
+    width: 38px;
+    height: 38px;
+    font-size: 16px;
+    inset-inline-end: 55px;
+  }
+
+  .play-btn {
+    width:58px;
+    height:58px;
+  }
+}
 /* روابط سريعة */
 .quick-nav{display:flex;gap:12px;justify-content:center;margin:-10px 0 30px}
 .qbtn{
@@ -899,10 +914,37 @@ body.only-videos .video-gallery{
 .video-iframe{ position:relative; z-index:1; } /* خلي المشغّل تحت الأزرار */
 
 .video-close-btn,
-.mute-toggle{
-  position:absolute;   /* أنت أصلاً محددها */
-  z-index:2101;        /* ارفعها فوق الـ iframe */
-  pointer-events:auto; /* تتأكد إنها تستقبل النقر */
+.mute-toggle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,.35);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2101;
+  pointer-events: auto;
+  font-size: 18px;
+}
+
+/* زر الإغلاق على اليمين */
+.video-close-btn {
+  top: 10px;
+  inset-inline-end: 10px; /* يمين */
+}
+
+/* زر الصوت بجانبه مع مسافة */
+.mute-toggle {
+  top: 10px;
+  inset-inline-end: 60px; /* يخليه يبعد شوي عن زر X */
+}
+
+.video-close-btn:hover,
+.mute-toggle:hover {
+  background: rgba(0,0,0,0.65);
 }
 
 </style>
