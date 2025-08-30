@@ -7,6 +7,12 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Poppins:wght@700&display=swap" rel="stylesheet">
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<link rel="preconnect" href="https://player.vimeo.com">
+<link rel="preconnect" href="https://i.vimeocdn.com">
+<link rel="preconnect" href="https://f.vimeocdn.com">
+<link rel="dns-prefetch" href="//player.vimeo.com">
+<link rel="dns-prefetch" href="//i.vimeocdn.com">
+<link rel="dns-prefetch" href="//f.vimeocdn.com">
 
 <style>
     /* عند عرض الفيديوهات فقط، لا تنتظر AOS */
@@ -39,11 +45,6 @@ body.only-videos .video-gallery{ margin-top: 20px; }
   transition: transform 0.3s ease;
   text-decoration: none;
 }
-.floating-cta:hover {
-  transform: scale(1.1);
-}
-
-/* 1) هذا هو الـ hover العادي */
 .floating-cta:hover {
   transform: scale(1.1);
 }
@@ -750,7 +751,6 @@ body.only-videos .video-gallery{ margin-top: 20px; }
   pointer-events: none;
   text-transform: uppercase;
 }/* ====== Videos Section (cards + lightbox) ====== */
-#videos .gallery{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}
 @media (max-width:520px){#videos .gallery{grid-template-columns:1fr}}
 
 .video-card::before{
@@ -850,8 +850,6 @@ body.only-videos .video-gallery{
   background-repeat:no-repeat;
 }
 
-/* اجعل شبكة الفيديو مثل شبكة المعرض الرئيسي */
-#videos .gallery{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
 /* اجعل بطاقات الفيديو بنفس حجم بطاقات الصور */
 .gallery.video-gallery .video-card{
   height:300px;                 /* يطابق .gallery-item */
@@ -884,12 +882,6 @@ body.only-videos .video-gallery{
 .mute-toggle i{ pointer-events:none; font-size:18px }
 .mute-toggle.show{ display:flex }
 @media(max-width:520px){ .mute-toggle{ width:40px; height:40px; inset-inline-end:52px } }
-
-
-.mute-toggle i{ pointer-events:none; font-size:18px }
-.mute-toggle.show{ display:flex }
-@media(max-width:520px){ .mute-toggle{ width:40px; height:40px; inset-inline-end:52px } }
-
 
 .like-badge{
   position:absolute; 
@@ -1425,100 +1417,6 @@ window.addEventListener('scroll', () => {
   <i class="fab fa-whatsapp"></i>
 </a>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  // لو بقيت class=hide-videos في الـ body لأي سبب، شيلها
-  document.body.classList.remove('hide-videos');
-
-  // أزرار “فيديوهات/الرئيسي”
-  const btnVideos = document.getElementById('btnVideos');
-  const btnAll    = document.getElementById('btnAll');
-
-  btnVideos?.addEventListener('click', e=>{
-    e.preventDefault();
-    document.body.classList.add('only-videos');
-    btnVideos.classList.add('active');
-    btnAll.classList.remove('active');
-    document.getElementById('videos')?.scrollIntoView({behavior:'smooth', block:'start'});
-  });
-
-  btnAll?.addEventListener('click', e=>{
-    e.preventDefault();
-    document.body.classList.remove('only-videos');
-    btnAll.classList.add('active');
-    btnVideos.classList.remove('active');
-    document.getElementById('top')?.scrollIntoView({behavior:'smooth', block:'start'});
-  });
-
-  // فتح لايت بوكس الفيديو عند الضغط على بطاقة
-  const vLightbox = document.getElementById('videoLightbox');
-  const vPlayer   = document.getElementById('videoPlayer');
-  const vClose    = document.getElementById('videoCloseBtn');
-  const muteBtn = document.getElementById('muteToggle');
-
-let isMuted = true;
-
-function setIcon(){
-  muteBtn.innerHTML = isMuted
-    ? '<i class="fa-solid fa-volume-xmark"></i>'
-    : '<i class="fa-solid fa-volume-high"></i>';
-}
-
-
-  document.addEventListener('click', (e)=>{
-    const card = e.target.closest('.video-card');
-    if (!card) return;
-    const id = card.getAttribute('data-vimeo-id');
-    if (!id) return;
-
-    // شغّل الفيديو داخل الـ iframe
-    vPlayer.src = `https://player.vimeo.com/video/${id}?autoplay=1&muted=1&playsinline=1&title=0&byline=0&portrait=0`;
-    isMuted = true;
-setIcon();
-muteBtn.classList.add('show');
-
-    vLightbox.classList.add('active');
-    vLightbox.setAttribute('aria-hidden','false');
-    document.body.style.overflow = 'hidden';
-  });
-  // أظهر زر الصوت بحالة الكتم
-    isMuted = true;
-    setIcon();
-    muteBtn.classList.add('show');
-  });
-
-  // ⇦ هنا تحط مستمع زر الصوت
-  muteBtn.addEventListener('click', ()=>{
-    if (!vPlayer.contentWindow) return;
-
-    if (isMuted) {
-      // فكّ الكتم + تأكد من التشغيل
-      vPlayer.contentWindow.postMessage(JSON.stringify({method:'setMuted',  value:false}), '*');
-      vPlayer.contentWindow.postMessage(JSON.stringify({method:'setVolume', value:1}),    '*');
-      vPlayer.contentWindow.postMessage(JSON.stringify({method:'play'}),                  '*');
-      isMuted = false;
-    } else {
-      // كتم
-      vPlayer.contentWindow.postMessage(JSON.stringify({method:'setMuted',  value:true}), '*');
-      vPlayer.contentWindow.postMessage(JSON.stringify({method:'setVolume', value:0}),    '*');
-      isMuted = true;
-    }
-    setIcon();
-  });
-
-  function closeVideo(){
-    muteBtn.classList.remove('show');
-    vLightbox.classList.remove('active');
-    vLightbox.setAttribute('aria-hidden','true');
-    // فضّي الـ src لإيقاف الفيديو تمامًا
-    vPlayer.src = '';
-    document.body.style.overflow = 'auto';
-  }
-
-  vClose?.addEventListener('click', closeVideo);
-  vLightbox?.addEventListener('click', (e)=>{ if (e.target === vLightbox) closeVideo(); });
-  document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape' && vLightbox.classList.contains('active')) closeVideo(); });
-</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -1578,7 +1476,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // إظهار الكنترولز + منع شاشة النهاية + تشغيل داخل نفس نقرة المستخدم
     vPlayer.src =
-      `https://player.vimeo.com/video/${id}?autoplay=1&muted=1&playsinline=1&controls=1&loop=1&pip=0&dnt=1&title=0&byline=0&portrait=0#t=0s`;
+  `https://player.vimeo.com/video/${id}?autoplay=1&muted=1&playsinline=1&controls=1&loop=1&pip=0&dnt=1&title=0&byline=0&portrait=0&quality=auto#t=0s`;
 
     // فور ما يجهز الـiframe: فُك الكتم لتختفي "Unmute" الافتراضية من Vimeo
     const onLoad = ()=>{
@@ -1663,86 +1561,27 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 </script>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-  import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, increment } 
-    from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-
-  // 🔐 إعدادات مشروعك (نفس اللي عطاك إياها Firebase)
-  const firebaseConfig = {
-    apiKey: "AIzaSyCS-vEeWEraakEc2L_x0DDTMmkdJH1nspc",
-    authDomain: "marklens-vision-97ab7.firebaseapp.com",
-    projectId: "marklens-vision-97ab7",
-    storageBucket: "marklens-vision-97ab7.firebasestorage.app",
-    messagingSenderId: "52527218690",
-    appId: "1:52527218690:web:584d0d06b0e777b67fe71b",
-    measurementId: "G-E87V54VEWH"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
-
-  // ====== تجهيز زر + عداد اللايك لكل كارد ======
-  function mountLike(el, likeId){
-    // اصنع شارة اللايك
-    const badge = document.createElement('button');
-    badge.className = 'like-badge';
-    badge.innerHTML = `
-      <i class="fa-regular fa-heart"></i>
-      <span class="like-count">0</span>
-    `;
-    el.appendChild(badge);
-
-    const icon  = badge.querySelector('i');
-    const count = badge.querySelector('.like-count');
-
-    // متغيّر محلي لمنع تكرار لايك من نفس المتصفح
-    const localKey = 'liked_'+likeId;
-    const already  = localStorage.getItem(localKey) === '1';
-    if (already) icon.classList.replace('fa-regular','fa-solid');
-
-    const ref = doc(db, 'likes', likeId);
-
-    // أنشئ الدوكيومنت إذا ما كان موجود
-    getDoc(ref).then(snap=>{
-      if (!snap.exists()){
-        setDoc(ref, { count: 0 });
-      }
-    });
-
-    // استمع للتحديثات الحية
-    onSnapshot(ref, (snap)=>{
-      if (snap.exists()){
-        const c = snap.data().count || 0;
-        count.textContent = c;
-      }
-    });
-
-    // عند الضغط: زِد العداد مرّة واحدة فقط لكل متصفح
-    badge.addEventListener('click', async (e)=>{
-      e.stopPropagation();
-      if (localStorage.getItem(localKey) === '1') return; // منع تكرار اللايك
-      try{
-        await updateDoc(ref, { count: increment(1) });
-      }catch(err){
-        // لو ما كان موجود (أول مرة) نعمل set ثم نعيد الزيادة
-        await setDoc(ref, { count: 1 }, { merge: true });
-      }
-      localStorage.setItem(localKey, '1');
-      icon.classList.replace('fa-regular','fa-solid');
-    });
-  }
-
-  // ====== اربط كل كروت الفيديو تلقائيًا ======
-  // رح نستخدم IDs: video1, video2, ... بنفس ترتيب الكروت في صفحتك
-  const cards = document.querySelectorAll('.video-card');
-  cards.forEach((card, i)=>{
-    const id = card.getAttribute('data-like-id') || `video${i+1}`;
-    // لو حاب تستخدم IDs خاصة، بس ضيف data-like-id على الكارد من الـ HTML
-    mountLike(card, id);
-  });
+<script>
+  // preconnect عند اقتراب أي كارد فيديو من الـ viewport
+  (function(){
+    let done=false;
+    const doPreconnect=()=>{
+      if (done) return; done=true;
+      ['https://player.vimeo.com','https://i.vimeocdn.com','https://f.vimeocdn.com'].forEach(h=>{
+        const l=document.createElement('link'); l.rel='preconnect'; l.href=h; document.head.appendChild(l);
+      });
+    };
+    const cards=document.querySelectorAll('.video-card');
+    if (!('IntersectionObserver' in window)) { doPreconnect(); return; }
+    const io=new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{ if (e.isIntersecting) doPreconnect(); });
+    },{rootMargin:'300px'});
+    cards.forEach(c=>io.observe(c));
+  })();
 </script>
+
+
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
   import {
@@ -1765,14 +1604,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ===== CSS بسيط للأزرار (ينضاف ديناميكياً) =====
   const likeCss = `
-  .like-badge{
-    position:absolute; bottom:10px; inset-inline-start:10px;
-    display:flex; align-items:center; gap:8px;
-    background:rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.35);
-    color:#fff; padding:6px 10px; border-radius:20px;
-    font-weight:700; cursor:pointer; z-index:5; user-select:none;
-    backdrop-filter:saturate(120%) blur(4px);
-  }
   .like-badge i{font-size:16px;}
   .like-badge.active{ background:#ff2d55; border-color:transparent }
   .like-badge.active i{ animation:pop .25s ease }
