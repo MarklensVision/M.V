@@ -9,6 +9,14 @@
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
 <style>
+    /* عند عرض الفيديوهات فقط، لا تنتظر AOS */
+body.only-videos [data-aos]{
+  opacity:1 !important;
+  transform:none !important;
+  transition:none !important;
+}
+/* مسافة بسيطة لأننا نخفي العنوان */
+body.only-videos .video-gallery{ margin-top: 20px; }
 /* تأكد أن السهم فوق الواتساب */
 .back-to-top {
   z-index: 1001;
@@ -867,7 +875,8 @@ body.only-videos .video-gallery{
 
 </style>
 </head>
-<body class="hide-videos">
+<body>
+
     <!-- Scroll Progress Bar -->
 <div id="progress-bar"></div>
 
@@ -887,7 +896,7 @@ body.only-videos .video-gallery{
 <!-- روابط سريعة -->
 <div class="quick-nav">
   <a href="#" id="btnVideos" class="qbtn"><i class="fa-solid fa-play"></i> فيديوهات</a>
-  <a href="#" id="btnAll" class="qbtn active"><i class="fa-solid fa-layer-group"></i> الرئيسي</a>
+  <a href="#" id="btnAll" class="qbtn active"><i class="fa-solid fa-layer-group"></i>الكل</a>
 </div>
 
 
@@ -990,6 +999,9 @@ body.only-videos .video-gallery{
     <div class="gallery-item" data-aos="zoom-in" data-aos-delay="700">
         <img src="https://i.ibb.co/Z6CwqNk9/5.png" alt="هوية بصرية" loading="lazy">
     </div>
+    <div class="gallery-item" data-aos="zoom-in" data-aos-delay="800">
+        <img src="https://i.ibb.co/1tg5fC0f/image.png" alt="هوية بصرية" loading="lazy">
+    </div>
 </div>
 
 
@@ -1025,8 +1037,8 @@ body.only-videos .video-gallery{
 </div>
 
 <div class="section-info" id="videosInfo" data-aos="fade-up">
-  <h3>أعمال فيديو متناسقة على كل الأجهزة</h3>
-  <p>واجهة نظيفة؛ اضغطي على أي بطاقة لفتح الفيديو داخل نافذة منبثقة. اضغطي خارج الفيديو للإغلاق.</p>
+  <h3>رحلة بصرية</h3>
+  <p>فيديوهات مصممة لتخلي الرسالة أوضح، والقصة أعمق، والتجربة البصرية أرقى«</p>
 </div>
 
 <div class="gallery video-gallery">
@@ -1378,6 +1390,10 @@ window.addEventListener('scroll', () => {
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+  // لو بقيت class=hide-videos في الـ body لأي سبب، شيلها
+  document.body.classList.remove('hide-videos');
+
+  // أزرار “فيديوهات/الرئيسي”
   const btnVideos = document.getElementById('btnVideos');
   const btnAll    = document.getElementById('btnAll');
 
@@ -1396,6 +1412,36 @@ document.addEventListener('DOMContentLoaded', function () {
     btnVideos.classList.remove('active');
     document.getElementById('top')?.scrollIntoView({behavior:'smooth', block:'start'});
   });
+
+  // فتح لايت بوكس الفيديو عند الضغط على بطاقة
+  const vLightbox = document.getElementById('videoLightbox');
+  const vPlayer   = document.getElementById('videoPlayer');
+  const vClose    = document.getElementById('videoCloseBtn');
+
+  document.addEventListener('click', (e)=>{
+    const card = e.target.closest('.video-card');
+    if (!card) return;
+    const id = card.getAttribute('data-vimeo-id');
+    if (!id) return;
+
+    // شغّل الفيديو داخل الـ iframe
+    vPlayer.src = `https://player.vimeo.com/video/${id}?autoplay=1&title=0&byline=0&portrait=0`;
+    vLightbox.classList.add('active');
+    vLightbox.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+  });
+
+  function closeVideo(){
+    vLightbox.classList.remove('active');
+    vLightbox.setAttribute('aria-hidden','true');
+    // فضّي الـ src لإيقاف الفيديو تمامًا
+    vPlayer.src = '';
+    document.body.style.overflow = 'auto';
+  }
+
+  vClose?.addEventListener('click', closeVideo);
+  vLightbox?.addEventListener('click', (e)=>{ if (e.target === vLightbox) closeVideo(); });
+  document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape' && vLightbox.classList.contains('active')) closeVideo(); });
 });
 </script>
 
