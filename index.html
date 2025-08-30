@@ -895,6 +895,15 @@ body.only-videos .video-gallery{
 .like-badge i{ font-size:18px; }
 .like-badge .like-count{ font-size:14px; line-height:1; }
 .like-badge:hover{ background:rgba(0,0,0,.6); transform:translateY(-1px); }
+.video-frame-wrap{ position:relative; } /* احتياط لو مش موجودة */
+.video-iframe{ position:relative; z-index:1; } /* خلي المشغّل تحت الأزرار */
+
+.video-close-btn,
+.mute-toggle{
+  position:absolute;   /* أنت أصلاً محددها */
+  z-index:2101;        /* ارفعها فوق الـ iframe */
+  pointer-events:auto; /* تتأكد إنها تستقبل النقر */
+}
 
 </style>
 </head>
@@ -1478,14 +1487,12 @@ document.addEventListener('DOMContentLoaded', function () {
     vPlayer.src =
   `https://player.vimeo.com/video/${id}?autoplay=1&muted=1&playsinline=1&controls=1&loop=1&pip=0&dnt=1&title=0&byline=0&portrait=0&quality=auto#t=0s`;
 
-    // فور ما يجهز الـiframe: فُك الكتم لتختفي "Unmute" الافتراضية من Vimeo
-    const onLoad = ()=>{
-      isMuted = false;
-      syncMute(); // يفك الكتم + يشغّل
-      vPlayer.removeEventListener('load', onLoad);
-    };
-    vPlayer.addEventListener('load', onLoad, { once:true });
-    setTimeout(onLoad, 700); // احتياط لو تأخر حدث load
+    // أول ما يجهز الـ iframe: اطلب تشغيل (يبقى Muted وهذا المسموح به دائماً)
+const onLoad = ()=>{
+  try { vPlayer.contentWindow.postMessage('{"method":"play"}', '*'); } catch {}
+  vPlayer.removeEventListener('load', onLoad);
+};
+vPlayer.addEventListener('load', onLoad, { once:true });
 
     vLightbox.classList.add('active');
     vLightbox.setAttribute('aria-hidden','false');
