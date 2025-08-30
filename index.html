@@ -1457,7 +1457,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const muteBtn   = document.getElementById('muteToggle');
 
   let isMuted = true;
-  const setIcon = ()=> {
+// هل المستخدم يفضّل الصوت عادةً؟ (مخزّن في localStorage)
+let wantSound = localStorage.getItem('wantSound') === '1';
+const setIcon = ()=> {
     muteBtn.innerHTML = isMuted
       ? '<i class="fa-solid fa-volume-xmark"></i>'
       : '<i class="fa-solid fa-volume-high"></i>';
@@ -1476,31 +1478,36 @@ document.addEventListener('DOMContentLoaded', function () {
     setIcon();
   }
 
-  // فتح الفيديو من الكارد
-  document.addEventListener('click', (e)=>{
-    const card = e.target.closest('.video-card');
-    if (!card) return;
-    const id = card.getAttribute('data-vimeo-id');
-    if (!id) return;
+// فتح الفيديو من الكارد
+document.addEventListener('click', (e)=>{
+  const card = e.target.closest('.video-card');
+  if (!card) return;
+  const id = card.getAttribute('data-vimeo-id');
+  if (!id) return;
 
-    // إظهار الكنترولز + منع شاشة النهاية + تشغيل داخل نفس نقرة المستخدم
-    vPlayer.src =
-  `https://player.vimeo.com/video/${id}?autoplay=1&muted=1&playsinline=1&controls=1&loop=1&pip=0&dnt=1&title=0&byline=0&portrait=0&quality=auto#t=0s`;
+  // شغّل بصوت
+  isMuted = false;
+  setIcon();
 
-    // أول ما يجهز الـ iframe: اطلب تشغيل (يبقى Muted وهذا المسموح به دائماً)
-const onLoad = ()=>{
-  try { vPlayer.contentWindow.postMessage('{"method":"play"}', '*'); } catch {}
-  vPlayer.removeEventListener('load', onLoad);
-};
-vPlayer.addEventListener('load', onLoad, { once:true });
+  // نحط muted=1 بس عشان السماح بالتشغيل التلقائي، وبعد التحميل نفكّه
+  vPlayer.src = `https://player.vimeo.com/video/${id}?autoplay=1&muted=1&playsinline=1&controls=1&loop=1&pip=0&dnt=1&title=0&byline=0&portrait=0&quality=auto#t=0s`;
 
-    vLightbox.classList.add('active');
-    vLightbox.setAttribute('aria-hidden','false');
-    document.body.style.overflow = 'hidden';
+  const onLoad = ()=>{
+    try {
+      // فك الكتم وشغّل فورًا (ضمن نقرة المستخدم)
+      vPlayer.contentWindow.postMessage('{"method":"setMuted","value":false}','*');
+      vPlayer.contentWindow.postMessage('{"method":"setVolume","value":1}','*');
+      vPlayer.contentWindow.postMessage('{"method":"play"}','*');
+    } catch {}
+    vPlayer.removeEventListener('load', onLoad);
+  };
+  vPlayer.addEventListener('load', onLoad, { once:true });
 
-    // أظهر زر الصوت
-    muteBtn.classList.add('show');
-  });
+  vLightbox.classList.add('active');
+  vLightbox.setAttribute('aria-hidden','false');
+  document.body.style.overflow = 'hidden';
+  muteBtn.classList.add('show');
+});
 
   // تزامن حالة الصوت عند أي تحميل/تشغيل داخل Vimeo (حتى لو المستخدم فتح فيديو مُقترَح من داخل المشغّل)
   window.addEventListener('message', (ev)=>{
@@ -1522,12 +1529,14 @@ vPlayer.addEventListener('load', onLoad, { once:true });
   });
 
   // زر الصوت
-  muteBtn.addEventListener('click', (ev)=>{
-    ev.stopPropagation();
-    isMuted = !isMuted;
-    syncMute();
-  });
-
+muteBtn.addEventListener('click', (ev)=>{
+  ev.stopPropagation();
+  isMuted = !isMuted;
+  syncMute();
+  // خزّن رغبة المستخدم للفيديوهات الجاية
+  wantSound = !isMuted;
+  localStorage.setItem('wantSound', wantSound ? '1' : '0');
+});
   // إغلاق
   function closeVideo(){
     muteBtn.classList.remove('show');
