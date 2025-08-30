@@ -804,6 +804,7 @@ body.only-videos .video-gallery{ margin-top: 20px; }
   border:1px solid rgba(255,255,255,.35);
   color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer
 }
+
 .video-close-btn:hover{background:rgba(0,0,0,.6)}
 
 @media(max-width:520px){
@@ -872,6 +873,36 @@ body.only-videos .video-gallery{
 
 /* شبكة الفيديو مثل الرئيسية */
 #videos .gallery{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+/* زر تبديل الصوت */
+.mute-toggle{
+  position:absolute; top:10px; inset-inline-end:58px;
+  width:44px; height:44px; border-radius:50%;
+  background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.35);
+  color:#fff; display:none; align-items:center; justify-content:center;
+  z-index:2100; cursor:pointer;
+}
+.mute-toggle i{ pointer-events:none; font-size:18px }
+.mute-toggle.show{ display:flex }
+@media(max-width:520px){ .mute-toggle{ width:40px; height:40px; inset-inline-end:52px } }
+
+
+.mute-toggle i{ pointer-events:none; font-size:18px }
+.mute-toggle.show{ display:flex }
+@media(max-width:520px){ .mute-toggle{ width:40px; height:40px; inset-inline-end:52px } }
+
+
+.like-badge{
+  position:absolute; 
+  bottom:10px; inset-inline-start:10px;
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 12px; border-radius:999px; cursor:pointer;
+  background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.35);
+  color:#fff; font-weight:700; z-index:5;
+  backdrop-filter:saturate(140%) blur(2px);
+}
+.like-badge i{ font-size:18px; }
+.like-badge .like-count{ font-size:14px; line-height:1; }
+.like-badge:hover{ background:rgba(0,0,0,.6); transform:translateY(-1px); }
 
 </style>
 </head>
@@ -1057,11 +1088,17 @@ body.only-videos .video-gallery{
 <div class="video-lightbox" id="videoLightbox" aria-hidden="true">
   <div class="video-frame-wrap">
     <button class="video-close-btn" id="videoCloseBtn" aria-label="إغلاق الفيديو"><i class="fas fa-times"></i></button>
+
+    <!-- زر الصوت -->
+    <button class="mute-toggle" id="muteToggle" aria-label="تشغيل/كتم الصوت">
+      <i class="fa-solid fa-volume-xmark"></i>
+    </button>
+
     <iframe class="video-iframe" id="videoPlayer"
             src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
   </div>
+</div>
 
-</div> <!-- /container -->
 
 
 <div class="lightbox">
@@ -1417,6 +1454,16 @@ document.addEventListener('DOMContentLoaded', function () {
   const vLightbox = document.getElementById('videoLightbox');
   const vPlayer   = document.getElementById('videoPlayer');
   const vClose    = document.getElementById('videoCloseBtn');
+  const muteBtn = document.getElementById('muteToggle');
+
+let isMuted = true;
+
+function setIcon(){
+  muteBtn.innerHTML = isMuted
+    ? '<i class="fa-solid fa-volume-xmark"></i>'
+    : '<i class="fa-solid fa-volume-high"></i>';
+}
+
 
   document.addEventListener('click', (e)=>{
     const card = e.target.closest('.video-card');
@@ -1425,13 +1472,42 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!id) return;
 
     // شغّل الفيديو داخل الـ iframe
-    vPlayer.src = `https://player.vimeo.com/video/${id}?autoplay=1&title=0&byline=0&portrait=0`;
+    vPlayer.src = `https://player.vimeo.com/video/${id}?autoplay=1&muted=1&playsinline=1&title=0&byline=0&portrait=0`;
+    isMuted = true;
+setIcon();
+muteBtn.classList.add('show');
+
     vLightbox.classList.add('active');
     vLightbox.setAttribute('aria-hidden','false');
     document.body.style.overflow = 'hidden';
   });
+  // أظهر زر الصوت بحالة الكتم
+    isMuted = true;
+    setIcon();
+    muteBtn.classList.add('show');
+  });
+
+  // ⇦ هنا تحط مستمع زر الصوت
+  muteBtn.addEventListener('click', ()=>{
+    if (!vPlayer.contentWindow) return;
+
+    if (isMuted) {
+      // فكّ الكتم + تأكد من التشغيل
+      vPlayer.contentWindow.postMessage(JSON.stringify({method:'setMuted',  value:false}), '*');
+      vPlayer.contentWindow.postMessage(JSON.stringify({method:'setVolume', value:1}),    '*');
+      vPlayer.contentWindow.postMessage(JSON.stringify({method:'play'}),                  '*');
+      isMuted = false;
+    } else {
+      // كتم
+      vPlayer.contentWindow.postMessage(JSON.stringify({method:'setMuted',  value:true}), '*');
+      vPlayer.contentWindow.postMessage(JSON.stringify({method:'setVolume', value:0}),    '*');
+      isMuted = true;
+    }
+    setIcon();
+  });
 
   function closeVideo(){
+    muteBtn.classList.remove('show');
     vLightbox.classList.remove('active');
     vLightbox.setAttribute('aria-hidden','true');
     // فضّي الـ src لإيقاف الفيديو تمامًا
@@ -1442,14 +1518,14 @@ document.addEventListener('DOMContentLoaded', function () {
   vClose?.addEventListener('click', closeVideo);
   vLightbox?.addEventListener('click', (e)=>{ if (e.target === vLightbox) closeVideo(); });
   document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape' && vLightbox.classList.contains('active')) closeVideo(); });
-});
 </script>
-
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+  // أزرار “فيديوهات/الكل”
   const btnVideos = document.getElementById('btnVideos');
   const btnAll    = document.getElementById('btnAll');
+  document.body.classList.remove('hide-videos');
 
   btnVideos?.addEventListener('click', e=>{
     e.preventDefault();
@@ -1466,42 +1542,318 @@ document.addEventListener('DOMContentLoaded', function () {
     btnVideos.classList.remove('active');
     document.getElementById('top')?.scrollIntoView({behavior:'smooth', block:'start'});
   });
+
+  // عناصر لايت بوكس الفيديو
+  const vLightbox = document.getElementById('videoLightbox');
+  const vPlayer   = document.getElementById('videoPlayer');
+  const vClose    = document.getElementById('videoCloseBtn');
+  const muteBtn   = document.getElementById('muteToggle');
+
+  let isMuted = true;
+  const setIcon = ()=> {
+    muteBtn.innerHTML = isMuted
+      ? '<i class="fa-solid fa-volume-xmark"></i>'
+      : '<i class="fa-solid fa-volume-high"></i>';
+  };
+
+  function syncMute(){
+    if (!vPlayer.contentWindow) return;
+    if (isMuted) {
+      vPlayer.contentWindow.postMessage('{"method":"setMuted","value":true}', '*');
+      vPlayer.contentWindow.postMessage('{"method":"setVolume","value":0}', '*');
+    } else {
+      vPlayer.contentWindow.postMessage('{"method":"setMuted","value":false}', '*');
+      vPlayer.contentWindow.postMessage('{"method":"setVolume","value":1}', '*');
+      vPlayer.contentWindow.postMessage('{"method":"play"}', '*');
+    }
+    setIcon();
+  }
+
+  // فتح الفيديو من الكارد
+  document.addEventListener('click', (e)=>{
+    const card = e.target.closest('.video-card');
+    if (!card) return;
+    const id = card.getAttribute('data-vimeo-id');
+    if (!id) return;
+
+    // إظهار الكنترولز + منع شاشة النهاية + تشغيل داخل نفس نقرة المستخدم
+    vPlayer.src =
+      `https://player.vimeo.com/video/${id}?autoplay=1&muted=1&playsinline=1&controls=1&loop=1&pip=0&dnt=1&title=0&byline=0&portrait=0#t=0s`;
+
+    // فور ما يجهز الـiframe: فُك الكتم لتختفي "Unmute" الافتراضية من Vimeo
+    const onLoad = ()=>{
+      isMuted = false;
+      syncMute(); // يفك الكتم + يشغّل
+      vPlayer.removeEventListener('load', onLoad);
+    };
+    vPlayer.addEventListener('load', onLoad, { once:true });
+    setTimeout(onLoad, 700); // احتياط لو تأخر حدث load
+
+    vLightbox.classList.add('active');
+    vLightbox.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+
+    // أظهر زر الصوت
+    muteBtn.classList.add('show');
+  });
+
+  // تزامن حالة الصوت عند أي تحميل/تشغيل داخل Vimeo (حتى لو المستخدم فتح فيديو مُقترَح من داخل المشغّل)
+  window.addEventListener('message', (ev)=>{
+    try {
+      if (!String(ev.origin).includes('vimeo.com')) return;
+      const data = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data;
+      if (!data) return;
+
+      if (data.event === 'ready' || data.event === 'loaded' || data.event === 'play') {
+        syncMute();
+      }
+      // احتياط لو تعطّل loop وظهر انتهاء
+      if (data.event === 'ended') {
+        vPlayer.contentWindow.postMessage('{"method":"setCurrentTime","value":0}', '*');
+        vPlayer.contentWindow.postMessage('{"method":"play"}', '*');
+        syncMute();
+      }
+    } catch {}
+  });
+
+  // زر الصوت
+  muteBtn.addEventListener('click', (ev)=>{
+    ev.stopPropagation();
+    isMuted = !isMuted;
+    syncMute();
+  });
+
+  // إغلاق
+  function closeVideo(){
+    muteBtn.classList.remove('show');
+    vLightbox.classList.remove('active');
+    vLightbox.setAttribute('aria-hidden','true');
+    vPlayer.src = ''; // إيقاف تام
+    document.body.style.overflow = 'auto';
+  }
+  vClose?.addEventListener('click', closeVideo);
+  vLightbox?.addEventListener('click', (e)=>{ if (e.target === vLightbox) closeVideo(); });
+  document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape' && vLightbox.classList.contains('active')) closeVideo(); });
 });
 </script>
-
-
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   const cards = document.querySelectorAll('.video-card');
+  if (!cards.length) return;
 
   cards.forEach(card => {
     const id = card.getAttribute('data-vimeo-id');
     if (!id) return;
 
-    const oembed = `https://vimeo.com/api/oembed.json?url=https://vimeo.com/${id}&width=1280`;
+    // 1) اعرض معاينة فورية من vumbnail (سريعة)
+    const fastThumb = `https://vumbnail.com/${id}.jpg`;
+    card.style.backgroundImage = `url('${fastThumb}')`;
+    card.style.backgroundSize = 'cover';
+    card.style.backgroundPosition = 'center';
 
-    fetch(oembed)
-      .then(r => r.json())
+    // 2) جرّب نحدّثها لصورة أعلى دقة من oEmbed (اختياري)
+    fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${id}`)
+      .then(r => r.ok ? r.json() : Promise.reject())
       .then(data => {
-        let thumb = data.thumbnail_url || "";
-        // حاول نجيب جودة أعلى لو رابط 640
-        thumb = thumb.replace(/_640(\.(jpg|png))$/,'_1280$1');
-        if (thumb) {
-          card.style.backgroundImage   = `url('${thumb}')`;
-          card.style.backgroundSize    = 'cover';
-          card.style.backgroundPosition= 'center';
-        }
+        let hi = data.thumbnail_url || '';
+        hi = hi.replace(/_640(\.(jpg|png))$/, '_1280$1'); // ترقية 640 إلى 1280 إن وجدت
+        if (hi) card.style.backgroundImage = `url('${hi}')`;
       })
-      .catch(() => {
-        // بديل سريع لو فشل oEmbed (اختياري)
-        card.style.backgroundImage = `url('https://vumbnail.com/${id}.jpg')`;
-        card.style.backgroundSize    = 'cover';
-        card.style.backgroundPosition= 'center';
-      });
+      .catch(() => {/* نكتفي بالمعاينة السريعة عند الخطأ */});
   });
 });
 </script>
 
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, increment } 
+    from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+  // 🔐 إعدادات مشروعك (نفس اللي عطاك إياها Firebase)
+  const firebaseConfig = {
+    apiKey: "AIzaSyCS-vEeWEraakEc2L_x0DDTMmkdJH1nspc",
+    authDomain: "marklens-vision-97ab7.firebaseapp.com",
+    projectId: "marklens-vision-97ab7",
+    storageBucket: "marklens-vision-97ab7.firebasestorage.app",
+    messagingSenderId: "52527218690",
+    appId: "1:52527218690:web:584d0d06b0e777b67fe71b",
+    measurementId: "G-E87V54VEWH"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  // ====== تجهيز زر + عداد اللايك لكل كارد ======
+  function mountLike(el, likeId){
+    // اصنع شارة اللايك
+    const badge = document.createElement('button');
+    badge.className = 'like-badge';
+    badge.innerHTML = `
+      <i class="fa-regular fa-heart"></i>
+      <span class="like-count">0</span>
+    `;
+    el.appendChild(badge);
+
+    const icon  = badge.querySelector('i');
+    const count = badge.querySelector('.like-count');
+
+    // متغيّر محلي لمنع تكرار لايك من نفس المتصفح
+    const localKey = 'liked_'+likeId;
+    const already  = localStorage.getItem(localKey) === '1';
+    if (already) icon.classList.replace('fa-regular','fa-solid');
+
+    const ref = doc(db, 'likes', likeId);
+
+    // أنشئ الدوكيومنت إذا ما كان موجود
+    getDoc(ref).then(snap=>{
+      if (!snap.exists()){
+        setDoc(ref, { count: 0 });
+      }
+    });
+
+    // استمع للتحديثات الحية
+    onSnapshot(ref, (snap)=>{
+      if (snap.exists()){
+        const c = snap.data().count || 0;
+        count.textContent = c;
+      }
+    });
+
+    // عند الضغط: زِد العداد مرّة واحدة فقط لكل متصفح
+    badge.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      if (localStorage.getItem(localKey) === '1') return; // منع تكرار اللايك
+      try{
+        await updateDoc(ref, { count: increment(1) });
+      }catch(err){
+        // لو ما كان موجود (أول مرة) نعمل set ثم نعيد الزيادة
+        await setDoc(ref, { count: 1 }, { merge: true });
+      }
+      localStorage.setItem(localKey, '1');
+      icon.classList.replace('fa-regular','fa-solid');
+    });
+  }
+
+  // ====== اربط كل كروت الفيديو تلقائيًا ======
+  // رح نستخدم IDs: video1, video2, ... بنفس ترتيب الكروت في صفحتك
+  const cards = document.querySelectorAll('.video-card');
+  cards.forEach((card, i)=>{
+    const id = card.getAttribute('data-like-id') || `video${i+1}`;
+    // لو حاب تستخدم IDs خاصة، بس ضيف data-like-id على الكارد من الـ HTML
+    mountLike(card, id);
+  });
+</script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+  import {
+    getFirestore, doc, getDoc, setDoc, updateDoc, increment, onSnapshot
+  } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+  // إعدادات مشروعك (مثل ما طلع لك من Firebase)
+  const firebaseConfig = {
+    apiKey: "AIzaSyCS-vEeWEraakEc2L_x0DDTMmkdJH1nspc",
+    authDomain: "marklens-vision-97ab7.firebaseapp.com",
+    projectId: "marklens-vision-97ab7",
+    storageBucket: "marklens-vision-97ab7.firebasestorage.app",
+    messagingSenderId: "52527218690",
+    appId: "1:52527218690:web:584d0d06b0e777b67fe71b",
+    measurementId: "G-E87V54VEWH"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  // ===== CSS بسيط للأزرار (ينضاف ديناميكياً) =====
+  const likeCss = `
+  .like-badge{
+    position:absolute; bottom:10px; inset-inline-start:10px;
+    display:flex; align-items:center; gap:8px;
+    background:rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.35);
+    color:#fff; padding:6px 10px; border-radius:20px;
+    font-weight:700; cursor:pointer; z-index:5; user-select:none;
+    backdrop-filter:saturate(120%) blur(4px);
+  }
+  .like-badge i{font-size:16px;}
+  .like-badge.active{ background:#ff2d55; border-color:transparent }
+  .like-badge.active i{ animation:pop .25s ease }
+  @keyframes pop{ 0%{transform:scale(1)} 50%{transform:scale(1.2)} 100%{transform:scale(1)} }
+  `;
+  const sty = document.createElement('style');
+  sty.textContent = likeCss;
+  document.head.appendChild(sty);
+
+  // ===== أدوات صغيرة =====
+  const sanitizeId = (s) => s.replace(/[^a-zA-Z0-9_-]/g,'_'); // ممنوع / في Firestore IDs
+  const lsKey = (id) => `liked:${id}`;
+
+  async function ensureDoc(docRef){
+    const snap = await getDoc(docRef);
+    if (!snap.exists()) await setDoc(docRef, {count:0});
+  }
+
+  function mountLike(el, likeId){
+    // اعمل الزر
+    const btn = document.createElement('div');
+    btn.className = 'like-badge';
+    btn.innerHTML = `<i class="fa-regular fa-heart"></i><span class="like-count">0</span>`;
+    el.style.position = el.style.position || 'relative';
+    el.appendChild(btn);
+
+    const dRef = doc(db, 'likes', likeId);
+    let first = true;
+
+    // هات العدد بشكل حيّ
+    ensureDoc(dRef).then(()=>{
+      onSnapshot(dRef, (snap)=>{
+        if (snap.exists()){
+          const c = snap.data().count||0;
+          btn.querySelector('.like-count').textContent = c;
+        }
+        // عدّل مظهر الزر إذا كان هالزائر عامل لايك
+        if (first){
+          if (localStorage.getItem(lsKey(likeId))) btn.classList.add('active');
+          first = false;
+        }
+      });
+    });
+
+    // الضغط = زيادة واحدة؛ امنع التكرار لنفس المتصفح
+    btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      if (localStorage.getItem(lsKey(likeId))) return; // already liked on this device
+      try{
+        await updateDoc(dRef, {count: increment(1)});
+        localStorage.setItem(lsKey(likeId), '1');
+        btn.classList.add('active');
+      }catch(err){
+        // لو فشل لأن الوثيقة ما كانت موجودة (نادراً)، أنشئها ثم حاول
+        await ensureDoc(dRef);
+        await updateDoc(dRef, {count: increment(1)});
+        localStorage.setItem(lsKey(likeId), '1');
+        btn.classList.add('active');
+      }
+    });
+  }
+
+  // ===== اربط على كل العناصر تلقائياً =====
+  // 1) بطاقات الفيديو: ID = v_<vimeoId>
+  document.querySelectorAll('.video-card').forEach(card=>{
+    const vid = card.getAttribute('data-vimeo-id');
+    if (!vid) return;
+    const likeId = sanitizeId('v_'+vid);
+    mountLike(card, likeId);
+  });
+
+  // 2) صور الجاليري: ID = i_<اسم-الملف>
+  document.querySelectorAll('.gallery-item img').forEach(img=>{
+    const src = img.getAttribute('src') || '';
+    if (!src) return;
+    const file = src.split('/').pop() || src;
+    const likeId = sanitizeId('i_'+file);
+    mountLike(img.closest('.gallery-item'), likeId);
+  });
+
+</script>
 
 </body>
 </html>
