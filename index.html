@@ -741,27 +741,154 @@
   align-items: center;
   pointer-events: none;
   text-transform: uppercase;
+}/* ====== Videos Section (cards + lightbox) ====== */
+#videos .gallery{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}
+@media (max-width:520px){#videos .gallery{grid-template-columns:1fr}}
+
+.video-card::before{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(60% 60% at 50% 50%, rgba(255,222,107,.15), transparent 70%),
+             linear-gradient(45deg, rgba(96,165,250,.08), rgba(192,132,252,.08));
 }
-</style>
+.play-btn{
+  position:absolute;z-index:2;width:68px;height:68px;border-radius:50%;
+  background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.35);
+  display:grid;place-items:center;transition:.2s
+}
+.play-btn i{font-size:26px;color:#fff;margin-left:3px}
+.video-card:hover .play-btn{transform:scale(1.06);background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.6)}
+
+.video-lightbox{
+  position:fixed;inset:0;background:rgba(0,0,0,.9);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;visibility:hidden;transition:.25s;z-index:2000;
+  /* مهم: لا تستخدم backdrop-filter هنا لأنه يسبب شاشة سوداء في بعض الأجهزة */
+}
+.video-lightbox.active{
+  opacity: 1;
+  visibility: visible;
+}
+
+
+.video-lightbox{ padding:2vh 2vw; }
+
+.video-frame-wrap{
+  width:98vw;
+  height:92vh;
+  max-width:none;
+  max-height:none;
+  aspect-ratio:auto;
+  background:#000;
+  border-radius:10px;
+  overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.6);
+  position:relative;
+}
+.video-iframe{width:100%;height:100%;border:0}
+
+/* زر الإغلاق داخل الزاوية العلوية */
+.video-close-btn{
+  position:absolute;
+  top:10px;
+  inset-inline-end:10px;
+  width:44px;height:44px;border-radius:50%;
+  background:rgba(0,0,0,.4);
+  border:1px solid rgba(255,255,255,.35);
+  color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer
+}
+.video-close-btn:hover{background:rgba(0,0,0,.6)}
+
+@media(max-width:520px){
+  .video-close-btn{top:10px !important}
+  .play-btn{width:58px;height:58px}
+}
+
+/* روابط سريعة */
+.quick-nav{display:flex;gap:12px;justify-content:center;margin:-10px 0 30px}
+.qbtn{
+  display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:30px;
+  background:transparent;color:#fff;text-decoration:none;font-weight:700;
+  border:1px solid rgba(255,255,255,.3);box-shadow:0 6px 20px rgba(0,0,0,.25);transition:.2s
+}
+.qbtn:hover{transform:translateY(-2px)}
+.qbtn.active{background:var(--highlight-color);color:#000;border-color:transparent}
+
+/* اخفِ قسم الفيديو افتراضياً */
+body.hide-videos #videos,
+body.hide-videos #videosInfo,
+body.hide-videos .video-gallery { display:none !important; }
+
+body.only-videos header{display:none !important;}
+body.only-videos .quick-nav{display:flex !important;}
+/* اخفِ كل الجاليريز ما عدا جاليري الفيديو */
+body.only-videos .section-divider,
+body.only-videos .section-info,
+body.only-videos .gallery:not(.video-gallery){display:none !important;}
+/* أظهِر قسم الفيديو كشبكة Grid */
+body.only-videos .video-gallery{
+  display:grid !important;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:25px;
+  justify-items:center;
+}
+
+/* نفس ارتفاع بطاقات الصور بالضبط */
+.video-card{
+  height:300px;        /* يطابق .gallery-item */
+  aspect-ratio:auto;   /* إلغاء النسبة */
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+}
+
+/* اجعل شبكة الفيديو مثل شبكة المعرض الرئيسي */
+#videos .gallery{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+/* اجعل بطاقات الفيديو بنفس حجم بطاقات الصور */
+.gallery.video-gallery .video-card{
+  height:300px;                 /* يطابق .gallery-item */
+  width:100%;
+  max-width:320px;
+  aspect-ratio:auto;            /* إلغاء النسبة */
+  background:#0b1220;
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  border-radius:12px;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 10px 30px rgba(0,0,0,.4);
+  cursor:pointer;
+}
+
+/* شبكة الفيديو مثل الرئيسية */
+#videos .gallery{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
 
 </style>
 </head>
-<body>
+<body class="hide-videos">
     <!-- Scroll Progress Bar -->
 <div id="progress-bar"></div>
 
 
 <div id="preloader">
     <div class="preloader-spinner"></div>
+
 </div>
 
 <div class="container">
-<header>
+<header id="top">
 <h1 class="floating" data-aos="fade-up">Marklens Vision</h1>
 <p class="intro" data-aos="fade-up" data-aos-delay="200">
 استكشف عالم الإبداع البصري من خلال معرضنا المميز. نقدم لكم مجموعة فريدة من أعمال التصميم والتصوير الفوتوغرافي، تصاميم لوجوهات احترافية، وإعلانات ناجحة
 </p>
 </header>
+<!-- روابط سريعة -->
+<div class="quick-nav">
+  <a href="#" id="btnVideos" class="qbtn"><i class="fa-solid fa-play"></i> فيديوهات</a>
+  <a href="#" id="btnAll" class="qbtn active"><i class="fa-solid fa-layer-group"></i> الرئيسي</a>
+</div>
 
 
 <div class="section-divider" data-aos="fade-right">
@@ -888,8 +1015,42 @@
   <img src="https://i.ibb.co/F4t1tpxm/8832.png" alt="تصميم إعلاني" loading="lazy">
   
 </div>
+</div> <!-- يغلق .gallery.ads-section -->
+
+<!-- ===== قسم الفيديوهات ===== -->
+<div class="section-divider" id="videos" data-aos="fade-right">
+  <div class="divider-line"></div>
+  <h2 class="divider-title">فيديوهات</h2>
+  <div class="divider-line"></div>
 </div>
+
+<div class="section-info" id="videosInfo" data-aos="fade-up">
+  <h3>أعمال فيديو متناسقة على كل الأجهزة</h3>
+  <p>واجهة نظيفة؛ اضغطي على أي بطاقة لفتح الفيديو داخل نافذة منبثقة. اضغطي خارج الفيديو للإغلاق.</p>
 </div>
+
+<div class="gallery video-gallery">
+  <div class="gallery-item video-card" data-aos="zoom-in" data-vimeo-id="1114433338"><div class="play-btn"><i class="fas fa-play"></i></div></div>
+  <div class="gallery-item video-card" data-aos="zoom-in" data-vimeo-id="1114433069"><div class="play-btn"><i class="fas fa-play"></i></div></div>
+  <div class="gallery-item video-card" data-aos="zoom-in" data-vimeo-id="1114432951"><div class="play-btn"><i class="fas fa-play"></i></div></div>
+  <div class="gallery-item video-card" data-aos="zoom-in" data-vimeo-id="1114432690"><div class="play-btn"><i class="fas fa-play"></i></div></div>
+  <div class="gallery-item video-card" data-aos="zoom-in" data-vimeo-id="1114432668"><div class="play-btn"><i class="fas fa-play"></i></div></div>
+  <div class="gallery-item video-card" data-aos="zoom-in" data-vimeo-id="1114432622"><div class="play-btn"><i class="fas fa-play"></i></div></div>
+  <div class="gallery-item video-card" data-aos="zoom-in" data-vimeo-id="1114432614"><div class="play-btn"><i class="fas fa-play"></i></div></div>
+  <div class="gallery-item video-card" data-aos="zoom-in" data-vimeo-id="1114432557"><div class="play-btn"><i class="fas fa-play"></i></div></div>
+  <div class="gallery-item video-card" data-aos="zoom-in" data-vimeo-id="1114432546"><div class="play-btn"><i class="fas fa-play"></i></div></div>
+</div>
+
+<!-- Lightbox خاص بالفيديو -->
+<div class="video-lightbox" id="videoLightbox" aria-hidden="true">
+  <div class="video-frame-wrap">
+    <button class="video-close-btn" id="videoCloseBtn" aria-label="إغلاق الفيديو"><i class="fas fa-times"></i></button>
+    <iframe class="video-iframe" id="videoPlayer"
+            src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+  </div>
+
+</div> <!-- /container -->
+
 
 <div class="lightbox">
 <div class="close-btn" aria-label="إغلاق المعرض">
@@ -916,7 +1077,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     const preloader = document.getElementById('preloader');
-    const galleryItems = document.querySelectorAll('.gallery-item');
+    const galleryItems = document.querySelectorAll('.gallery-item:not(.video-card)');
     const lightbox = document.querySelector('.lightbox');
     const lightboxImg = document.querySelector('.lightbox-content img');
     const closeBtn = document.querySelector('.close-btn');
@@ -1214,6 +1375,86 @@ window.addEventListener('scroll', () => {
 <a href="https://wa.me/962792842047" target="_blank" class="floating-cta" aria-label="طلب تصميم عبر واتساب">
   <i class="fab fa-whatsapp"></i>
 </a>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const btnVideos = document.getElementById('btnVideos');
+  const btnAll    = document.getElementById('btnAll');
+
+  btnVideos?.addEventListener('click', e=>{
+    e.preventDefault();
+    document.body.classList.add('only-videos');
+    btnVideos.classList.add('active');
+    btnAll.classList.remove('active');
+    document.getElementById('videos')?.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+
+  btnAll?.addEventListener('click', e=>{
+    e.preventDefault();
+    document.body.classList.remove('only-videos');
+    btnAll.classList.add('active');
+    btnVideos.classList.remove('active');
+    document.getElementById('top')?.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+});
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const btnVideos = document.getElementById('btnVideos');
+  const btnAll    = document.getElementById('btnAll');
+
+  btnVideos?.addEventListener('click', e=>{
+    e.preventDefault();
+    document.body.classList.add('only-videos');
+    btnVideos.classList.add('active');
+    btnAll.classList.remove('active');
+    document.getElementById('videos')?.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+
+  btnAll?.addEventListener('click', e=>{
+    e.preventDefault();
+    document.body.classList.remove('only-videos');
+    btnAll.classList.add('active');
+    btnVideos.classList.remove('active');
+    document.getElementById('top')?.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+});
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const cards = document.querySelectorAll('.video-card');
+
+  cards.forEach(card => {
+    const id = card.getAttribute('data-vimeo-id');
+    if (!id) return;
+
+    const oembed = `https://vimeo.com/api/oembed.json?url=https://vimeo.com/${id}&width=1280`;
+
+    fetch(oembed)
+      .then(r => r.json())
+      .then(data => {
+        let thumb = data.thumbnail_url || "";
+        // حاول نجيب جودة أعلى لو رابط 640
+        thumb = thumb.replace(/_640(\.(jpg|png))$/,'_1280$1');
+        if (thumb) {
+          card.style.backgroundImage   = `url('${thumb}')`;
+          card.style.backgroundSize    = 'cover';
+          card.style.backgroundPosition= 'center';
+        }
+      })
+      .catch(() => {
+        // بديل سريع لو فشل oEmbed (اختياري)
+        card.style.backgroundImage = `url('https://vumbnail.com/${id}.jpg')`;
+        card.style.backgroundSize    = 'cover';
+        card.style.backgroundPosition= 'center';
+      });
+  });
+});
+</script>
 
 
 </body>
