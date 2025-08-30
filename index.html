@@ -1465,43 +1465,19 @@ const setIcon = ()=> {
       : '<i class="fa-solid fa-volume-high"></i>';
   };
 
-  function syncMute(){
-    if (!vPlayer.contentWindow) return;
-    if (isMuted) {
-      vPlayer.contentWindow.postMessage('{"method":"setMuted","value":true}', '*');
-      vPlayer.contentWindow.postMessage('{"method":"setVolume","value":0}', '*');
-    } else {
-      vPlayer.contentWindow.postMessage('{"method":"setMuted","value":false}', '*');
-      vPlayer.contentWindow.postMessage('{"method":"setVolume","value":1}', '*');
-      vPlayer.contentWindow.postMessage('{"method":"play"}', '*');
-    }
-    setIcon();
-  }
-
-// فتح الفيديو من الكارد
+// فتح الفيديو من الكارد — نبدأ "صامت" عشان الموبايل يسمح بالتشغيل التلقائي
 document.addEventListener('click', (e)=>{
   const card = e.target.closest('.video-card');
   if (!card) return;
   const id = card.getAttribute('data-vimeo-id');
   if (!id) return;
 
-  // شغّل بصوت
-  isMuted = false;
+  // ابدأ صامت
+  isMuted = true;
   setIcon();
 
-  // نحط muted=1 بس عشان السماح بالتشغيل التلقائي، وبعد التحميل نفكّه
+  // شغّل تلقائي + ميوت (لا تعمل onLoad ولا تفك الكتم هنا)
   vPlayer.src = `https://player.vimeo.com/video/${id}?autoplay=1&muted=1&playsinline=1&controls=1&loop=1&pip=0&dnt=1&title=0&byline=0&portrait=0&quality=auto#t=0s`;
-
-  const onLoad = ()=>{
-    try {
-      // فك الكتم وشغّل فورًا (ضمن نقرة المستخدم)
-      vPlayer.contentWindow.postMessage('{"method":"setMuted","value":false}','*');
-      vPlayer.contentWindow.postMessage('{"method":"setVolume","value":1}','*');
-      vPlayer.contentWindow.postMessage('{"method":"play"}','*');
-    } catch {}
-    vPlayer.removeEventListener('load', onLoad);
-  };
-  vPlayer.addEventListener('load', onLoad, { once:true });
 
   vLightbox.classList.add('active');
   vLightbox.setAttribute('aria-hidden','false');
@@ -1509,34 +1485,33 @@ document.addEventListener('click', (e)=>{
   muteBtn.classList.add('show');
 });
 
-  // تزامن حالة الصوت عند أي تحميل/تشغيل داخل Vimeo (حتى لو المستخدم فتح فيديو مُقترَح من داخل المشغّل)
+
   window.addEventListener('message', (ev)=>{
-    try {
-      if (!String(ev.origin).includes('vimeo.com')) return;
-      const data = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data;
-      if (!data) return;
-
-      if (data.event === 'ready' || data.event === 'loaded' || data.event === 'play') {
-        syncMute();
-      }
-      // احتياط لو تعطّل loop وظهر انتهاء
-      if (data.event === 'ended') {
-        vPlayer.contentWindow.postMessage('{"method":"setCurrentTime","value":0}', '*');
-        vPlayer.contentWindow.postMessage('{"method":"play"}', '*');
-        syncMute();
-      }
-    } catch {}
-  });
-
-  // زر الصوت
-muteBtn.addEventListener('click', (ev)=>{
-  ev.stopPropagation();
-  isMuted = !isMuted;
-  syncMute();
-  // خزّن رغبة المستخدم للفيديوهات الجاية
-  wantSound = !isMuted;
-  localStorage.setItem('wantSound', wantSound ? '1' : '0');
+  try{
+    if (!String(ev.origin).includes('vimeo.com')) return;
+    const data = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data;
+    if (data?.event === 'ended') {
+      vPlayer.contentWindow.postMessage('{"method":"setCurrentTime","value":0}','*');
+      vPlayer.contentWindow.postMessage('{"method":"play"}','*');
+    }
+  }catch{}
 });
+
+  muteBtn.addEventListener('click', (ev)=>{
+  ev.stopPropagation();
+  if (!vPlayer.contentWindow) return;
+  isMuted = !isMuted;
+  if (isMuted){
+    vPlayer.contentWindow.postMessage('{"method":"setMuted","value":true}','*');
+    vPlayer.contentWindow.postMessage('{"method":"setVolume","value":0}','*');
+  } else {
+    vPlayer.contentWindow.postMessage('{"method":"setMuted","value":false}','*');
+    vPlayer.contentWindow.postMessage('{"method":"setVolume","value":1}','*');
+    vPlayer.contentWindow.postMessage('{"method":"play"}','*');
+  }
+  setIcon();
+});
+
   // إغلاق
   function closeVideo(){
     muteBtn.classList.remove('show');
